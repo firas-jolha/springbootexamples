@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.RequestParamMapMethodArgumentResolver;
 
+import javax.validation.Valid;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,8 +51,8 @@ public class ServiceController {
     }
 
     @PostMapping("/students/add")
-    public Student addStudent(@RequestBody Iterable<Student> stds){
-        return studentRepository.save(stds.iterator().next());
+    public Student addStudent(@Valid @RequestBody Student stds){
+        return studentRepository.save(stds);
     }
 
     @DeleteMapping("/students/del/{id}")
@@ -62,14 +63,15 @@ public class ServiceController {
     }
 
     @PutMapping("/students/upd/{id}")
-    public Student updateStudent(@RequestBody(required = false) Student std, @PathVariable("id") int id, @RequestParam("courseid") Optional<Integer> courseid){
-        Student std1 = studentRepository.findById(id).get();
-        if (std==null) std = std1;
-        std1.setStudent(std);
+    public Student updateStudent(@RequestBody Student std, @RequestParam("courseid") Optional<Integer> courseid){
         if (courseid.isPresent()){
-            std1.getCourses().add(courseRepository.findById(courseid.get()).get());
+            try {
+                std.getCourses().add(courseRepository.findById(courseid.get()).get());
+            }catch (RuntimeException ex){
+                handleError();
+            }
         }
-        return studentRepository.save(std1);
+        return studentRepository.save(std);
     }
 
     @GetMapping("/courses")
@@ -99,11 +101,8 @@ public class ServiceController {
     }
 
     @PutMapping("courses/upd/{id}")
-    public Course updateCourse(@RequestBody Course c, @PathVariable Integer id){
-        Course c1 = courseRepository.findById(id).get();
-        c1.setCourse(c);
-        courseRepository.save(c1);
-        return c1;
+    public Course updateCourse(@RequestBody Course c){
+        return addCourse(c);
     }
 
     @ExceptionHandler({Exception.class})

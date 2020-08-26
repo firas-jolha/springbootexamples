@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.io.Serializable;
+import javax.validation.constraints.NotEmpty;
 import java.util.Collection;
 
 @Data
@@ -23,6 +23,16 @@ public class Student implements Cloneable {
     @Column(name="student_name")
     private String name;
 
+    @NotEmpty(message = "Please provide the email!")
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "student_email")
+    private Email email;
+
+    @NotEmpty(message = "Please specify a dept!")
+    @Column(name="student_dept")
+    private String dept;
+
+
     @JsonIgnore(value = true)
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name="students_courses",
@@ -31,35 +41,17 @@ public class Student implements Cloneable {
     )
     private Collection<Course> courses;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public Collection<Course> getCourses() {
         return courses;
     }
 
-    public void setCourses(Collection<Course> courses) {
-        this.courses = courses;
-    }
-
-    public void setStudent(Student std){
-        this.setCourses(std.courses);
-        this.setId(std.id);
-        this.setName(std.name);
-    }
+//    public void setStudent(Student std){
+//        this.setCourses(std.courses);
+//        this.setId(std.id);
+//        this.setName(std.name);
+//        this.setEmail(std.email);
+//    }
 
     @Override
     public Student clone(){
